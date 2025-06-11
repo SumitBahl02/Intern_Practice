@@ -6,17 +6,20 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/get-user.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Tasks')
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt')) // 🔐 this applies to the whole controller
 @Controller('tasks')
-@UseGuards(AuthGuard('jwt'))
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
@@ -31,10 +34,7 @@ export class TaskController {
   }
 
   @Get(':id')
-  findOne(
-    @Param('id', ParseIntPipe) id: number,
-    @GetUser() user: any,
-  ) {
+  findOne(@Param('id', ParseIntPipe) id: number, @GetUser() user: any) {
     return this.taskService.findOne(user.userId, id);
   }
 
@@ -48,10 +48,7 @@ export class TaskController {
   }
 
   @Delete(':id')
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-    @GetUser() user: any,
-  ) {
+  remove(@Param('id', ParseIntPipe) id: number, @GetUser() user: any) {
     return this.taskService.remove(user.userId, id);
   }
 
