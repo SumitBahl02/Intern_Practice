@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -7,7 +7,12 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 export class CommentService {
   constructor(private prisma: PrismaService) {}
 
-  create(userId: number, dto: CreateCommentDto) {
+  async create(userId: number, dto: CreateCommentDto) {
+    // ✅ Check if the task exists first
+    const task = await this.prisma.task.findUnique({ where: { id: dto.taskId } });
+    if (!task) throw new NotFoundException('Task not found for comment');
+
+    // ✅ If task exists, create the comment
     return this.prisma.comment.create({
       data: {
         content: dto.content,
