@@ -55,4 +55,48 @@ export class UserService {
   async getUserComments(id: number) {
     return this.prisma.comment.findMany({ where: { userId: id } });
   }
+
+  // 🔍 Search by id and/or name
+  async searchUsers(params: { query?: string; id?: string; name?: string }) {
+    if (params.query) {
+      const numericId = parseInt(params.query);
+      return this.prisma.user.findMany({
+        where: {
+          OR: [
+            !isNaN(numericId) ? { id: numericId } : {},
+            {
+              name: {
+                contains: params.query,
+              },
+            },
+          ],
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      });
+    }
+
+    const filters: any = {};
+    if (params.id) {
+      const id = parseInt(params.id);
+      if (!isNaN(id)) filters.id = id;
+    }
+    if (params.name) {
+      filters.name = {
+        contains: params.name,
+      };
+    }
+
+    return this.prisma.user.findMany({
+      where: filters,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+  }
 }

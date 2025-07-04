@@ -8,6 +8,7 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -15,6 +16,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/get-user.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Projects')
 @ApiBearerAuth()
@@ -29,8 +31,8 @@ export class ProjectController {
   }
 
   @Get()
-  findAll(@GetUser() user: any) {
-    return this.projectService.findAll(user.userId);
+  findAll(@Query() paginationDto: PaginationDto, @GetUser() user: any) {
+    return this.projectService.findAll(user.userId, paginationDto);
   }
 
   @Get(':id')

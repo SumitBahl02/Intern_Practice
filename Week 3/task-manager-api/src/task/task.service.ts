@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { PaginationDto, PaginatedResult } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class TaskService {
@@ -19,10 +20,33 @@ export class TaskService {
     });
   }
 
-  async findAll(userId: number) {
-    return this.prisma.task.findMany({
-      where: { userId },
-    });
+  async findAll(userId: number, paginationDto: PaginationDto): Promise<PaginatedResult<any>> {
+    const { page = 1, limit = 10 } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.task.findMany({
+        where: { userId },
+        skip,
+        take: limit,
+        orderBy: { id: 'desc' },
+      }),
+      this.prisma.task.count({ where: { userId } }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    };
   }
 
   async findOne(userId: number, taskId: number) {
@@ -48,7 +72,37 @@ export class TaskService {
     return this.prisma.task.delete({ where: { id: taskId } });
   }
 
-  async getComments(taskId: number) {
-    return this.prisma.comment.findMany({ where: { taskId } });
+  async getComments(taskId: number, paginationDto: PaginationDto): Promise<PaginatedResult<any>> {
+    const { page = 1, limit = 10 } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.comment.findMany({
+        where: { taskId },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: { id: true, name: true, email: true },
+          },
+        },
+      }),
+      this.prisma.comment.count({ where: { taskId } }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    };
   }
 }

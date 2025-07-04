@@ -8,11 +8,9 @@ export class CommentService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: number, dto: CreateCommentDto) {
-    // ✅ Check if the task exists first
     const task = await this.prisma.task.findUnique({ where: { id: dto.taskId } });
     if (!task) throw new NotFoundException('Task not found for comment');
 
-    // ✅ If task exists, create the comment
     return this.prisma.comment.create({
       data: {
         content: dto.content,
@@ -26,8 +24,27 @@ export class CommentService {
     const comment = await this.prisma.comment.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, name: true, email: true } },
-        task: { select: { id: true, title: true } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        task: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            status: true,
+            project: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 

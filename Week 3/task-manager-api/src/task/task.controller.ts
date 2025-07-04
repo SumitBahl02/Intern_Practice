@@ -8,6 +8,7 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -15,10 +16,11 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from '../auth/get-user.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt')) // 🔐 this applies to the whole controller
+@UseGuards(AuthGuard('jwt')) //  this applies to the whole controller
 @Controller('tasks')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
@@ -29,8 +31,8 @@ export class TaskController {
   }
 
   @Get()
-  findAll(@GetUser() user: any) {
-    return this.taskService.findAll(user.userId);
+  findAll(@Query() paginationDto: PaginationDto, @GetUser() user: any) {
+    return this.taskService.findAll(user.userId, paginationDto);
   }
 
   @Get(':id')
@@ -53,7 +55,7 @@ export class TaskController {
   }
 
   @Get(':id/comments')
-  getComments(@Param('id', ParseIntPipe) id: number) {
-    return this.taskService.getComments(id);
+  getComments(@Param('id', ParseIntPipe) id: number, @Query() paginationDto: PaginationDto) {
+    return this.taskService.getComments(id, paginationDto);
   }
 }
