@@ -11,16 +11,18 @@ import { ResponseInterceptor } from "./common/interceptors/response.interceptor"
  */
 async function bootstrap(): Promise<void> {
   const logger = new Logger("Bootstrap");
-  
+
   try {
     const app = await NestFactory.create(AppModule);
 
     // Global configuration
-    app.useGlobalPipes(new ValidationPipe({ 
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      })
+    );
     app.useGlobalFilters(new AllExceptionsFilter());
     app.useGlobalInterceptors(
       new LoggingInterceptor(),
@@ -41,20 +43,26 @@ async function bootstrap(): Promise<void> {
       .addTag("tasks", "Task management endpoints")
       .addTag("projects", "Project management endpoints")
       .build();
-    
+
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup("api", app, document);
 
     const port = Number(process.env.PORT) || 3000;
     await app.listen(port);
-    
+
     logger.log(`Application running on: http://localhost:${port}`);
-    logger.log(`Swagger documentation available at: http://localhost:${port}/api`);
+    logger.log(
+      `Swagger documentation available at: http://localhost:${port}/api`
+    );
   } catch (error) {
     if (error.code === "EADDRINUSE") {
       logger.error(`Port ${process.env.PORT || 3000} is already in use!`);
-      logger.error(`Try running: "taskkill /F /IM node.exe" to kill all Node.js processes`);
-      logger.error(`Or change the PORT environment variable to use a different port`);
+      logger.error(
+        `Try running: "taskkill /F /IM node.exe" to kill all Node.js processes`
+      );
+      logger.error(
+        `Or change the PORT environment variable to use a different port`
+      );
     } else {
       logger.error(`Failed to start application: ${error.message}`);
     }
