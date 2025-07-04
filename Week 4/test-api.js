@@ -15,23 +15,28 @@ let authToken = '';
  * @returns {Promise<{response: Response, data: any}>}
  */
 async function makeRequest(url, options = {}) {
-  const fullUrl = `${baseUrl}${url}`;
-  const defaultOptions = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
-    },
-  };
-  
-  const response = await fetch(fullUrl, { ...defaultOptions, ...options });
-  const data = await response.json();
-  
-  console.log(`${options.method || 'GET'} ${fullUrl}`);
-  console.log(`Status: ${response.status}`);
-  console.log(`Response:`, JSON.stringify(data, null, 2));
-  console.log('---');
-  
-  return { response, data };
+  try {
+    const fullUrl = `${baseUrl}${url}`;
+    const defaultOptions = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+    };
+    
+    const response = await fetch(fullUrl, { ...defaultOptions, ...options });
+    const data = await response.json();
+    
+    console.log(`${options.method || 'GET'} ${fullUrl}`);
+    console.log(`Status: ${response.status}`);
+    console.log(`Response:`, JSON.stringify(data, null, 2));
+    console.log('---');
+    
+    return { response, data };
+  } catch (error) {
+    console.error(`Request failed for ${url}:`, error.message);
+    throw error;
+  }
 }
 
 /**
@@ -39,6 +44,12 @@ async function makeRequest(url, options = {}) {
  */
 async function testAPI() {
   console.log('Starting API Tests...\n');
+
+  // Check if fetch is available
+  if (typeof fetch === 'undefined') {
+    console.error('FAILED: fetch is not available. Please use Node.js 18+ or install a fetch polyfill.');
+    process.exit(1);
+  }
 
   try {
     // Test 1: Register a new user
