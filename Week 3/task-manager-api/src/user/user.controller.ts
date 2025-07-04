@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -18,7 +12,7 @@ export class UserController {
     return this.userService.getAllUsers(); // TODO: protect with admin guard later
   }
 
-  // 🔍 Search by ID or name
+  // Search by ID or name
   @Get('search')
   searchUsers(
     @Query('q') query?: string,

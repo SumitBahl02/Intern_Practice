@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
@@ -56,7 +60,7 @@ export class UserService {
     return this.prisma.comment.findMany({ where: { userId: id } });
   }
 
-  // 🔍 Search by id and/or name
+  // Search by id and/or name
   async searchUsers(params: { query?: string; id?: string; name?: string }) {
     if (params.query) {
       const numericId = parseInt(params.query);
